@@ -16,27 +16,30 @@ const (
 // 	p2Piece         = Red
 // )
 
+const ROWS int = 6
+const COLS int = 7
+
 // 6 rows, 7 columns
 type c4Board struct {
-	arr [6][7]c4Piece
+	arr [ROWS][COLS]c4Piece
 }
 
 func newC4Board() c4Board {
-	return c4Board{arr: [6][7]c4Piece{}}
+	return c4Board{arr: [ROWS][COLS]c4Piece{}}
 }
 
 func c4OutOfBounds(row int, col int) bool {
-	return !(row >= 0 && row < 6 && col >= 0 && col < 7)
+	return !(row >= 0 && row < ROWS && col >= 0 && col < COLS)
 }
 
 func printPiece(p c4Piece) {
 	switch p {
 	case Empty:
-		fmt.Print("_")
+		fmt.Print("__")
 	case Red:
-		fmt.Print("\033[31m" + "█" + "\033[0m")
+		fmt.Print("\033[31m" + "██" + "\033[0m")
 	case Black:
-		fmt.Print("\033[30m" + "█" + "\033[0m")
+		fmt.Print("\033[30m" + "██" + "\033[0m")
 	case OutOfBounds:
 		fmt.Print("X")
 	}
@@ -44,17 +47,21 @@ func printPiece(p c4Piece) {
 
 func (b *c4Board) print() {
 	fmt.Println()
-	for r := 5; r >= 0; r-- {
-		for c := 0; c < 7; c++ {
-			fmt.Print("| ")
+	for r := ROWS - 1; r >= 0; r-- {
+		for c := 0; c < COLS; c++ {
+			fmt.Print("|")
 			printPiece(b.getPiece(r, c))
-			fmt.Print(" ")
+			fmt.Print("")
 		}
 		fmt.Print("|")
 		fmt.Println()
 	}
-	fmt.Println("  1   2   3   4   5   6   7  ")
-	fmt.Println()
+
+	fmt.Print(" ")
+	for i := 1; i <= COLS; i++ {
+		fmt.Print(" " + fmt.Sprint(i) + " ")
+	}
+	fmt.Println("  ")
 }
 
 func (b *c4Board) getPiece(row int, col int) c4Piece {
@@ -101,8 +108,8 @@ func (b *c4Board) getValidPos(col int) int {
 }
 
 func (b *c4Board) getMoves() []int {
-	moves := make([]int, 0, 7)
-	for col := 0; col < 7; col++ {
+	moves := make([]int, 0, COLS)
+	for col := 0; col < COLS; col++ {
 		pos := b.getValidPos(col)
 		if pos != -1 {
 			moves = append(moves, col)
@@ -110,4 +117,60 @@ func (b *c4Board) getMoves() []int {
 		}
 	}
 	return moves
+}
+
+func (b *c4Board) getWinningPiece() c4Piece {
+	// horizontalCheck
+	for j := 0; j < ROWS-3; j++ {
+		for i := 0; i < COLS; i++ {
+			piece := b.getPiece(i, j)
+			if piece != Red && piece != Black {
+				goto VERT
+			}
+			if b.getPiece(i, j) == piece && b.getPiece(i, j+1) == piece && b.getPiece(i, j+2) == piece && b.getPiece(i, j+3) == piece {
+				return piece
+			}
+		}
+	}
+VERT:
+	// verticalCheck
+	for i := 0; i < ROWS-3; i++ {
+		for j := 0; j < COLS; j++ {
+			piece := b.getPiece(i, j)
+			if piece != Red && piece != Black {
+				goto ADIAG
+			}
+			if b.getPiece(i, j) == piece && b.getPiece(i+1, j) == piece && b.getPiece(i+2, j) == piece && b.getPiece(i+3, j) == piece {
+				return piece
+			}
+		}
+	}
+
+ADIAG:
+	// ascendingDiagonalCheck
+	for i := 0; i < COLS-3; i++ {
+		for j := 0; j < ROWS-3; j++ {
+			piece := b.getPiece(i, j)
+			if piece != Red && piece != Black {
+				goto DDIAG
+			}
+			if (b.getPiece(i, j) == piece) && (b.getPiece(i+1, j+1) == piece) && (b.getPiece(i+2, j+2) == piece) && (b.getPiece(i+3, j+3) == piece) {
+				return piece
+			}
+		}
+	}
+DDIAG:
+	// descendingDiagonalCheck
+	for i := 0; i < COLS; i++ {
+		for j := 3; j < ROWS; j++ {
+			piece := b.getPiece(i, j)
+			if piece != Red && piece != Black {
+				return Empty
+			}
+			if (b.getPiece(i, j) == piece) && (b.getPiece(i+1, j-1) == piece) && (b.getPiece(i+2, j-2) == piece) && (b.getPiece(i+3, j-3) == piece) {
+				return piece
+			}
+		}
+	}
+	return Empty
 }

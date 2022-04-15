@@ -28,7 +28,7 @@ func (h human) getName() string {
 func printMoves(moves []int) {
 	fmt.Print("Moves: ")
 	for _, mv := range moves {
-		fmt.Print(mv)
+		fmt.Print(mv + 1)
 		fmt.Print(" ")
 	}
 	fmt.Println()
@@ -42,6 +42,10 @@ func containsMove(moves []int, move int) bool {
 	}
 	return false
 }
+
+// func (p *c4Player) scoreBoard(b *c4Board) {
+
+// }
 
 func (h human) getMove(b *c4Board) (col int) {
 	b.print()
@@ -72,4 +76,48 @@ func (h human) getMove(b *c4Board) (col int) {
 		}
 	}
 	return
+}
+
+type perfectAI struct {
+	piece c4Piece
+}
+
+func (ai perfectAI) getPiece() c4Piece {
+	return ai.piece
+}
+
+func (ai perfectAI) getName() string {
+	return "Perfect AI"
+}
+
+func (ai perfectAI) getMove(b *c4Board) (col int) {
+	return 0
+}
+
+func (ai perfectAI) minimax(board c4Board, depth int, alpha int, beta int, maximizingPlayer bool) {
+	winner := board.getWinner()
+	if winner == {
+		return
+	}
+	if maximizingPlayer {
+		value := Math.MinInt32
+		for _, move := range getMoves(board) {
+			value := Math.max(value, alphabeta(child, depth-1, alpha, beta, FALSE))
+			alpha := Math.max(alpha, value)
+			if value >= beta {
+				break
+			}
+		}
+		return value
+	} else {
+		value := Math.MaxInt32
+		for _, move := range getMoves(board) {
+			value := Math.min(value, alphabeta(child, depth-1, alpha, beta, TRUE))
+			beta := Math.min(beta, value)
+			if value <= alpha {
+				break
+			}
+			return value
+		}
+	}
 }

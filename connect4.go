@@ -4,7 +4,7 @@ type connect4Game struct {
 	board  c4Board
 	p1, p2 c4Player
 	p1turn bool
-	winner *c4Player
+	winner c4Player
 }
 
 func NewConnect4Game(p1 c4Player, p2 c4Player) *connect4Game {
@@ -18,18 +18,15 @@ func NewConnect4Game(p1 c4Player, p2 c4Player) *connect4Game {
 }
 
 func (game *connect4Game) calcWinner() {
-	game.winner = nil
+	piece := game.board.getWinningPiece()
+	if piece == game.p1.getPiece() {
+		game.winner = game.p1
+	} else if piece == game.p2.getPiece() {
+		game.winner = game.p2
+	}
 }
 
-func (game *connect4Game) gameOver() bool {
-	if game.winner == nil {
-		game.calcWinner()
-		if game.winner != nil {
-			game.board.print()
-
-			return true
-		}
-	}
+func (game *connect4Game) isGameOver() bool {
 	return false
 }
 

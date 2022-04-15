@@ -24,6 +24,7 @@ func getPlayers() (p1 c4Player, p2 c4Player) {
 		fmt.Println("Singleplayer")
 	}
 
+	// here is where you would assign an AI to be a player
 	return human{"Alice", Black}, human{"Bob", Red}
 }
 
@@ -35,7 +36,7 @@ func main() {
 
 	c4Game := NewConnect4Game(player1, player2)
 
-	for !c4Game.gameOver() {
+	for !c4Game.isGameOver() {
 		c4Game.nextMove()
 	}
 }
