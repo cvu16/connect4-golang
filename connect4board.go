@@ -17,19 +17,21 @@ const (
 func (p c4Piece) print() {
 	switch p {
 	case Empty:
-		fmt.Print("__")
+		fmt.Print("  ")
 	case Red:
 		fmt.Print("\033[31m" + "██" + "\033[0m")
 	case Black:
-		fmt.Print("\033[30m" + "██" + "\033[0m")
+		fmt.Print("\033[32m" + "██" + "\033[0m")
 	case OutOfBounds:
-		fmt.Print("X")
+		fmt.Print("OB")
 	}
 }
 
 // standard connect 4 board size
-const ROWS int = 6
-const COLS int = 7
+const COLSIZE int = 6
+const ROWSIZE int = 7
+const COLS int = ROWSIZE
+const ROWS int = COLSIZE
 
 /*
  * This struct wraps an array of connect 4 pieces
@@ -40,21 +42,21 @@ const COLS int = 7
  *
  */
 type c4Board struct {
-	arr [ROWS][COLS]c4Piece
+	arr [ROWSIZE][COLSIZE]c4Piece
 }
 
 /*
  * initializes the board to empty
  */
 func newC4Board() c4Board {
-	return c4Board{arr: [ROWS][COLS]c4Piece{}}
+	return c4Board{arr: [ROWSIZE][COLSIZE]c4Piece{}}
 }
 
 /*
  * if a given position is out of bounds for any connect 4 board
  */
-func c4OutOfBounds(row int, col int) bool {
-	return !(row >= 0 && row < ROWS && col >= 0 && col < COLS)
+func c4OutOfBounds(col int, row int) bool {
+	return row < 0 || row >= ROWSIZE || col < 0 || col >= COLSIZE
 }
 
 /*
@@ -65,11 +67,15 @@ func (b *c4Board) print() {
 	for r := ROWS - 1; r >= 0; r-- {
 		for c := 0; c < COLS; c++ {
 			fmt.Print("|")
-			b.getPiece(r, c).print()
+			b.getPiece(c, r).print()
 			fmt.Print("")
 		}
 		fmt.Print("|")
 		fmt.Println()
+		for c := 0; c < COLS; c++ {
+			fmt.Print("+--")
+		}
+		fmt.Println("+")
 	}
 
 	fmt.Print(" ")
@@ -82,23 +88,23 @@ func (b *c4Board) print() {
 /*
  * gets a piece from the board and returns
  */
-func (b *c4Board) getPiece(row int, col int) c4Piece {
-	if c4OutOfBounds(row, col) {
-		return OutOfBounds
+func (b *c4Board) getPiece(col int, row int) c4Piece {
+	if !c4OutOfBounds(row, col) {
+		return b.arr[col][row]
 	} else {
-		return b.arr[row][col]
+		return OutOfBounds
 	}
 }
 
 /*
  * sets a piece on the board and return if it was successful
  */
-func (b *c4Board) setPiece(p c4Piece, row int, col int) bool {
-	if c4OutOfBounds(row, col) {
-		return false
-	} else {
-		b.arr[row][col] = p
+func (b *c4Board) setPiece(p c4Piece, col int, row int) bool {
+	if !c4OutOfBounds(row, col) {
+		b.arr[col][row] = p
 		return true
+	} else {
+		return false
 	}
 }
 
@@ -107,7 +113,7 @@ func (b *c4Board) setPiece(p c4Piece, row int, col int) bool {
  */
 func (b *c4Board) playMove(p c4Piece, col int) bool {
 	row := b.getValidPos(col)
-	return b.setPiece(p, row, col)
+	return b.setPiece(p, col, row)
 }
 
 /*
@@ -115,7 +121,7 @@ func (b *c4Board) playMove(p c4Piece, col int) bool {
  */
 func (b c4Board) tryMove(p c4Piece, col int) c4Board {
 	row := b.getValidPos(col)
-	b.setPiece(p, row, col)
+	b.setPiece(p, col, row)
 	return b
 }
 
@@ -124,7 +130,7 @@ func (b c4Board) tryMove(p c4Piece, col int) c4Board {
  */
 func (b *c4Board) getValidPos(col int) int {
 	for height := 0; true; height++ {
-		switch b.getPiece(height, col) {
+		switch b.getPiece(col, height) {
 		case Red, Black:
 			continue
 
@@ -159,8 +165,8 @@ func (b *c4Board) getMoves() []int {
  */
 func (b *c4Board) check4Row() c4Piece {
 	// horizontalCheck
-	for i := 0; i < ROWS; i++ {
-		for j := 0; j < COLS-3; j++ {
+	for i := 0; i < COLS; i++ {
+		for j := 0; j < ROWS-3; j++ {
 			piece := b.getPiece(i, j)
 			if piece != Red && piece != Black {
 				continue
@@ -172,8 +178,8 @@ func (b *c4Board) check4Row() c4Piece {
 	}
 
 	// verticalCheck
-	for i := 0; i < ROWS-3; i++ {
-		for j := 0; j < COLS; j++ {
+	for i := 0; i < COLS-3; i++ {
+		for j := 0; j < ROWS; j++ {
 			piece := b.getPiece(i, j)
 			if piece != Red && piece != Black {
 				continue

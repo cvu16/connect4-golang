@@ -1,18 +1,20 @@
 package main
 
-type perfectAI struct {
+import "math/rand"
+
+type minimaxAI struct {
 	piece c4Piece
 }
 
-func (ai perfectAI) getName() string {
-	return "Perfect AI"
+func (ai minimaxAI) getName() string {
+	return "Computer"
 }
 
-func (ai perfectAI) getPiece() c4Piece {
+func (ai minimaxAI) getPiece() c4Piece {
 	return ai.piece
 }
 
-func (ai perfectAI) getOpponentPiece() c4Piece {
+func (ai minimaxAI) getOpponentPiece() c4Piece {
 	if ai.getPiece() == Black {
 		return Red
 	} else if ai.getPiece() == Red {
@@ -21,12 +23,31 @@ func (ai perfectAI) getOpponentPiece() c4Piece {
 	return Empty
 }
 
-func (ai perfectAI) scoreBoard(board c4Board) int {
+// func printPiece(p c4Piece) {
+// 	switch p {
+// 	case Empty:
+// 		fmt.Println("empty")
+// 	case Red:
+// 		fmt.Println("red")
+// 	case Black:
+// 		fmt.Println("black")
+// 	default:
+// 		fmt.Println("Unknown Piece")
+// 	}
+// }
+
+func (ai minimaxAI) scoreBoard(board c4Board) int {
 	piece := board.check4Row()
+
+	// printPiece(piece)
+	// printPiece(ai.getPiece())
+	// printPiece(ai.getOpponentPiece())
+	// fmt.Println()
+
 	if piece == ai.getPiece() {
-		return 1
+		return 100
 	} else if piece == ai.getOpponentPiece() {
-		return -1
+		return -100
 	} else {
 		return 0
 	}
@@ -34,61 +55,82 @@ func (ai perfectAI) scoreBoard(board c4Board) int {
 
 func max(x, y int) int {
 	if x > y {
-		return y
+		return x
 	}
-	return x
+	return y
 }
 
 func min(x, y int) int {
 	if x < y {
-		return y
+		return x
 	}
-	return x
+	return y
 }
 
-func (ai perfectAI) minimax(board c4Board, depth int, alpha int, beta int, maximizingPlayer bool) int {
-	// board.print()
+func (ai minimaxAI) minimax(board c4Board, depth int, alpha int, beta int, maximizingPlayer bool) int {
 	score := ai.scoreBoard(board)
-	if depth == 0 || score != 0 {
-		return score
+	if depth == 10 || score == 100 || score == -100 {
+		return score - depth
 	}
 
+	var bestVal int
 	if maximizingPlayer {
-		value := -100
+		bestVal = -101
 		for _, move := range board.getMoves() {
-			value = max(value, ai.minimax(board.tryMove(ai.getOpponentPiece(), move), depth-1, alpha, beta, false))
-			alpha = max(alpha, value)
-			if value >= beta {
+			nextBoard := board.tryMove(ai.getPiece(), move)
+			//nextBoard.print()
+			value := ai.minimax(nextBoard, depth+1, alpha, beta, false)
+			bestVal = max(bestVal, value)
+			alpha = max(alpha, bestVal)
+			if beta <= alpha {
 				break
 			}
 		}
+		return bestVal
 	} else {
-		value := 100
+		bestVal = 101
 		for _, move := range board.getMoves() {
-			value = min(value, ai.minimax(board.tryMove(ai.getPiece(), move), depth-1, alpha, beta, true))
-			beta = min(beta, value)
-			if value <= alpha {
+			nextBoard := board.tryMove(ai.getOpponentPiece(), move)
+			//nextBoard.print()
+			value := ai.minimax(nextBoard, depth+1, alpha, beta, true)
+			bestVal = min(bestVal, value)
+			beta = min(beta, bestVal)
+			if beta <= alpha {
 				break
 			}
 		}
+		return bestVal
 	}
-	return score
 }
 
-func (ai perfectAI) getMove(b *c4Board) (col int) {
-	moves := b.getMoves()
-	best_move := moves[0]
-	best_score := ai.minimax(b.tryMove(ai.getPiece(), best_move), 10, 2, -2, true)
-	for i, move := range moves {
-		if i == 0 {
-			continue
-		}
-		score := ai.minimax(b.tryMove(ai.getPiece(), best_move), 10, 2, -2, true)
-		if score > best_score {
-			best_score = score
-			best_move = move
+func pickMove(moves, scores []int) int {
+	var max_score int = scores[0]
+	var best_moves []int
+	for _, score := range scores {
+		if score > max_score {
+			max_score = score
 		}
 	}
 
-	return best_move
+	for i, move := range moves {
+		if scores[i] == max_score {
+			best_moves = append(best_moves, move)
+		}
+	}
+
+	return best_moves[rand.Intn(len(best_moves))]
+}
+
+func (ai minimaxAI) getMove(b *c4Board) (col int) {
+	moves := b.getMoves()
+	// fmt.Print("moves: ")
+	// fmt.Println(moves)
+	var scores = make([]int, 0, len(moves))
+
+	for _, move := range moves {
+		tryBoard := b.tryMove(ai.getPiece(), move)
+		scores = append(scores, ai.minimax(tryBoard, 0, -101, 101, false))
+	}
+
+	return pickMove(moves, scores)
 }
