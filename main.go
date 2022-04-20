@@ -17,7 +17,7 @@ func getPlayers() (p1 c4Player, p2 c4Player) {
 	input = strings.TrimSpace(input)
 	switch input {
 	case "1", "s", "S", "y", "Y", "":
-		fmt.Println("No bitches :-|")
+		fmt.Println("Singleplayer")
 		return human{"Alice", Black}, minimaxAI{Red}
 
 	case "2", "m", "M", "n", "N":
