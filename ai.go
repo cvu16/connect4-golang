@@ -1,6 +1,9 @@
 package main
 
-import "math/rand"
+import (
+	"math/rand"
+	"sync"
+)
 
 type minimaxAI struct {
 	piece c4Piece
@@ -125,12 +128,27 @@ func (ai minimaxAI) getMove(b *c4Board) (col int) {
 	moves := b.getMoves()
 	// fmt.Print("moves: ")
 	// fmt.Println(moves)
-	var scores = make([]int, 0, len(moves))
+	var scores = make([]int, len(moves))
+	//Adding condition variables
+	var wg sync.WaitGroup
+	wg.Add(len(moves))
+	//Implement multiple threads here for to shorten computational time
+	for i := 0; i < len(moves); i++ {
 
-	for _, move := range moves {
-		tryBoard := b.tryMove(ai.getPiece(), move)
-		scores = append(scores, ai.minimax(tryBoard, 0, -101, 101, false))
+		go func(i int) {
+			defer wg.Done()
+			tryBoard := b.tryMove(ai.getPiece(), moves[i])
+			scores[i] = ai.minimax(tryBoard, 0, -101, 101, false)
+		}(i)
+
 	}
+	wg.Wait()
+	/*
+		for i := 0; i < len(moves); i++ {
+			tryBoard := b.tryMove(ai.getPiece(), moves[i])
+			scores[i] = ai.minimax(tryBoard, 0, -101, 101, false)
+		}
+	*/
 
 	return pickMove(moves, scores)
 }

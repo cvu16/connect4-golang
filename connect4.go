@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 /*
  * This struct is the main abstraction of a gamestate of connect4
@@ -68,7 +71,10 @@ func (game *connect4Game) nextMove() {
 	}
 
 	for i := 0; i < 10; i++ {
+		start := time.Now()
 		if game.board.playMove(player.getPiece(), player.getMove(&game.board)) {
+			end := time.Since(start)
+			fmt.Printf("%s %s \n", "Move took: ", end)
 			game.p1turn = !game.p1turn
 			return
 		} else {
