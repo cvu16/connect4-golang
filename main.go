@@ -15,14 +15,33 @@ func getPlayers() (p1 c4Player, p2 c4Player) {
 	var input string
 	fmt.Scanln(&input)
 	input = strings.TrimSpace(input)
+
 	switch input {
 	case "1", "s", "S", "y", "Y", "":
-		fmt.Println("Singleplayer")
-		return human{"Alice", Black}, minimaxAI{Red}
+		var input2 string
+		fmt.Println("Write your name: ")
+		fmt.Print("> ")
+		fmt.Scanln(&input2)
+		input2 = strings.TrimSpace(input2)
+
+		fmt.Println("")
+		return human{input2, Black}, minimaxAI{Red}
 
 	case "2", "m", "M", "n", "N":
 		// fmt.Println("Multiplayer")
-		return human{"Alice", Black}, human{"Bob", Red}
+		var input2 string
+		fmt.Println("Write your name (player1): ")
+		fmt.Print("> ")
+		fmt.Scanln(&input2)
+		input2 = strings.TrimSpace(input2)
+
+		var input3 string
+		fmt.Println("Write your name (player2): ")
+		fmt.Print("> ")
+		fmt.Scanln(&input3)
+		input3 = strings.TrimSpace(input3)
+
+		return human{input2, Black}, human{input3, Red}
 	}
 
 	return human{"Alice", Black}, human{"Bob", Red}
